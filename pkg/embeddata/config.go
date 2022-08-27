@@ -10,6 +10,8 @@ import (
 var configFile embed.FS
 
 type Config struct {
+	Port int
+	Host string
 }
 
 func GetConfig() (*Config, error) {

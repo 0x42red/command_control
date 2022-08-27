@@ -35,6 +35,7 @@ type CommandServer struct {
 	Update        chan bool
 	sshServer     *ssh.Server
 	AllowedKeys   []gossh.PublicKey
+	Port          int
 }
 
 func (cs *CommandServer) connectionHandler(ctx ssh.Context, conn net.Conn) net.Conn {
@@ -92,7 +93,7 @@ func (cs *CommandServer) handler(s ssh.Session) {
 func (cs *CommandServer) Start() error {
 	cs.Clients = []*CommandClient{}
 	cs.Update = make(chan bool, 200)
-	cs.sshServer = &ssh.Server{Addr: ":2222", Handler: cs.handler}
+	cs.sshServer = &ssh.Server{Addr: fmt.Sprintf(":%d", cs.Port), Handler: cs.handler}
 	if err := cs.sshServer.SetOption(ssh.WrapConn(cs.connectionHandler)); err != nil {
 		return err
 	}

@@ -54,9 +54,12 @@ var (
 )
 
 func init() {
-
-	flag.StringVar(&addr, "ip", "127.0.0.1", "machine ip address.")
-	flag.UintVar(&port, "port", 2222, "ssh port number.")
+	config, err := embeddata.GetConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	flag.StringVar(&addr, "ip", config.Host, "machine ip address.")
+	flag.UintVar(&port, "port", uint(config.Port), "ssh port number.")
 	flag.StringVar(&key, "key", strings.Join([]string{os.Getenv("HOME"), ".ssh", "id_rsa"}, "/"), "private key path.")
 	flag.StringVar(&cmd, "cmd", "", "command to run.")
 	flag.BoolVar(&pass, "pass", false, "ask for ssh password instead of private key.")

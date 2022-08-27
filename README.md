@@ -28,9 +28,11 @@ So here we are.
 
 ## How-To / Docs
 TL;DR
-```
+```bash
 git clone git@github.com:0x42red/command_control.git
 cd command_control
+cp pkg/embeddata/config/config.yaml.example pkg/embeddata/config/config.yaml
+# Edit the config.yaml to update the host and port
 go generate ./...
 go build cmd/command/command_server.go
 go build cmd/control/control_client.go
@@ -49,6 +51,5 @@ In this screenshot we have three connected clients, and have sent a command to c
 
 
 ## TODO
-- Create config file for the ports and address connection information, bake this into the binaries
 - Rewrite client to not use third party library
 - Make client fault resilient 

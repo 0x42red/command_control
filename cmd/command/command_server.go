@@ -36,10 +36,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	config, err := embeddata.GetConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	commandServer := &server.CommandServer{
 		AllowedKeys: []gossh.PublicKey{
 			publicKey,
 		},
+		Port: config.Port,
 	}
 	go commandServer.Start()
 
