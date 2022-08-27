@@ -1,8 +1,8 @@
+// Heavily borrowed code for proof of concept, will be changing
 package main
 
 import (
 	"bufio"
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -16,41 +16,13 @@ import (
 
 	"github.com/0x42red/command_control/pkg/embeddata"
 	"github.com/melbahja/goph"
-	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
 
-//
-// Run command and auth via password:
-// > go run main.go --ip 192.168.122.102 --pass --cmd ls
-//
-// Run command and auth via private key:
-// > go run main.go --ip 192.168.122.102 --cmd ls
-// Or:
-// > go run main.go --ip 192.168.122.102 --key /path/to/private_key --cmd ls
-//
-// Run command and auth with private key and passphrase:
-// > go run main.go --ip 192.168.122.102 --passphrase --cmd ls
-//
-// Run a command and interrupt it after 1 second:
-// > go run main.go --ip 192.168.122.102 --cmd "sleep 10" --timeout=1s
-//
-// You can test with the interactive mode without passing --cmd flag.
-//
-
 var (
-	err        error
-	auth       goph.Auth
-	client     *goph.Client
-	addr       string
-	port       uint
-	key        string
-	cmd        string
-	pass       bool
-	passphrase bool
-	timeout    time.Duration
-	agent      bool
-	sftpc      *sftp.Client
+	addr    string
+	port    uint
+	timeout time.Duration
 )
 
 func init() {
@@ -60,48 +32,43 @@ func init() {
 	}
 	flag.StringVar(&addr, "ip", config.Host, "machine ip address.")
 	flag.UintVar(&port, "port", uint(config.Port), "ssh port number.")
-	flag.StringVar(&key, "key", strings.Join([]string{os.Getenv("HOME"), ".ssh", "id_rsa"}, "/"), "private key path.")
-	flag.StringVar(&cmd, "cmd", "", "command to run.")
-	flag.BoolVar(&pass, "pass", false, "ask for ssh password instead of private key.")
-	flag.BoolVar(&agent, "agent", false, "use ssh agent for authentication (unix systems only).")
-	flag.BoolVar(&passphrase, "passphrase", false, "ask for private key passphrase.")
 	flag.DurationVar(&timeout, "timeout", 0, "interrupt a command with SIGINT after a given timeout (0 means no timeout)")
 }
 
 func VerifyHost(host string, remote net.Addr, key ssh.PublicKey) error {
 	return nil
-	//
-	// If you want to connect to new hosts.
-	// here your should check new connections public keys
-	// if the key not trusted you shuld return an error
-	//
+	// //
+	// // If you want to connect to new hosts.
+	// // here your should check new connections public keys
+	// // if the key not trusted you shuld return an error
+	// //
 
-	// hostFound: is host in known hosts file.
-	// err: error if key not in known hosts file OR host in known hosts file but key changed!
-	hostFound, err := goph.CheckKnownHost(host, remote, key, "")
+	// // hostFound: is host in known hosts file.
+	// // err: error if key not in known hosts file OR host in known hosts file but key changed!
+	// hostFound, err := goph.CheckKnownHost(host, remote, key, "")
 
-	// Host in known hosts but key mismatch!
-	// Maybe because of MAN IN THE MIDDLE ATTACK!
-	if hostFound && err != nil {
+	// // Host in known hosts but key mismatch!
+	// // Maybe because of MAN IN THE MIDDLE ATTACK!
+	// if hostFound && err != nil {
 
-		return err
-	}
-
-	// handshake because public key already exists.
-	if hostFound && err == nil {
-
-		return nil
-	}
-
-	// // Ask user to check if he trust the host public key.
-	// if askIsHostTrusted(host, key) == false {
-
-	// 	// Make sure to return error on non trusted keys.
-	// 	return errors.New("you typed no, aborted!")
+	// 	return err
 	// }
 
-	// Add the new host to known hosts file.
-	return goph.AddKnownHost(host, remote, key, "")
+	// // handshake because public key already exists.
+	// if hostFound && err == nil {
+
+	// 	return nil
+	// }
+
+	// // // Ask user to check if he trust the host public key.
+	// // if askIsHostTrusted(host, key) == false {
+
+	// // 	// Make sure to return error on non trusted keys.
+	// // 	return errors.New("you typed no, aborted!")
+	// // }
+
+	// // Add the new host to known hosts file.
+	// return goph.AddKnownHost(host, remote, key, "")
 }
 
 func main() {
@@ -126,7 +93,7 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	client, err = goph.NewConn(&goph.Config{
+	client, err := goph.NewConn(&goph.Config{
 		User:     currentUser.Username,
 		Addr:     addr,
 		Port:     port,
@@ -137,31 +104,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	// Close client net connection
 	defer client.Close()
 
-	// If the cmd flag exists
-	if cmd != "" {
-		ctx := context.Background()
-		// create a context with timeout, if supplied in the argumetns
-		if timeout > 0 {
-			var cancel context.CancelFunc
-			ctx, cancel = context.WithTimeout(ctx, timeout)
-			defer cancel()
-		}
-
-		out, err := client.RunContext(ctx, cmd)
-
-		fmt.Println(string(out), err)
-		return
-	}
-
-	// else open interactive mode.
-	playWithSSHJustForTestingThisProgram(client)
+	handleConnection(client)
 }
 
-func playWithSSHJustForTestingThisProgram(client *goph.Client) {
+func handleConnection(client *goph.Client) {
 
 	fmt.Printf("Connected to %s\n", client.Config.Addr)
 
@@ -219,8 +167,6 @@ func playWithSSHJustForTestingThisProgram(client *goph.Client) {
 	)
 
 	for scanner.Scan() {
-
-		err = nil
 		cmd = scanner.Text()
 		parts = strings.Split(cmd, " ")
 
