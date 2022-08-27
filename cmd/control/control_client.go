@@ -14,7 +14,7 @@ import (
 
 	"os/user"
 
-	"github.com/0x42red/command_control/pkg/embedkeys"
+	"github.com/0x42red/command_control/pkg/embeddata"
 	"github.com/melbahja/goph"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -107,7 +107,7 @@ func main() {
 
 	var err error
 
-	signer, err := embedkeys.GetPrivateKey()
+	signer, err := embeddata.GetPrivateKey()
 	if err != nil {
 		panic(err)
 	}

@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/0x42red/command_control/pkg/embedkeys"
+	"github.com/0x42red/command_control/pkg/embeddata"
 	"github.com/0x42red/command_control/pkg/server"
 	"github.com/0x42red/command_control/pkg/ui"
 	"github.com/jroimartin/gocui"
@@ -31,7 +31,7 @@ func main() {
 		}
 	}(g)
 
-	publicKey, err := embedkeys.GetPublicKey()
+	publicKey, err := embeddata.GetPublicKey()
 	if err != nil {
 		log.Fatal(err)
 	}

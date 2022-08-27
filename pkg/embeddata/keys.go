@@ -1,4 +1,4 @@
-package embedkeys
+package embeddata
 
 //go:generate go run genkeys.go
 
