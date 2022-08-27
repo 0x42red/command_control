@@ -14,6 +14,7 @@ import (
 
 	"os/user"
 
+	"github.com/0x42red/command_control/pkg/embedkeys"
 	"github.com/melbahja/goph"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -106,7 +107,7 @@ func main() {
 
 	var err error
 
-	signer, err := goph.GetSigner("./keys/private/id_rsa.key", "")
+	signer, err := embedkeys.GetPrivateKey()
 	if err != nil {
 		panic(err)
 	}

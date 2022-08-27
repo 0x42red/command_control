@@ -1,10 +1,10 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"time"
 
+	"github.com/0x42red/command_control/pkg/embedkeys"
 	"github.com/0x42red/command_control/pkg/server"
 	"github.com/0x42red/command_control/pkg/ui"
 	"github.com/jroimartin/gocui"
@@ -31,12 +31,7 @@ func main() {
 		}
 	}(g)
 
-	keyBytes, err := ioutil.ReadFile("./keys/public/id_rsa.pub")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	publicKey, _, _, _, err := gossh.ParseAuthorizedKey(keyBytes)
+	publicKey, err := embedkeys.GetPublicKey()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,6 +51,6 @@ func main() {
 	go ui.UpdateCommandServerGUI(g, commandServer)
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		log.Panicln(err)
+		log.Fatal(err)
 	}
 }
