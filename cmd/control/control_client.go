@@ -111,7 +111,7 @@ func main() {
 
 func handleConnection(client *goph.Client) {
 
-	fmt.Printf("Connected to %s\n", client.Config.Addr)
+	fmt.Printf("Connected to %s:%s\n", client.Config.Addr, client.Config.Port)
 
 	scanner := bufio.NewScanner(os.Stdin)
 
