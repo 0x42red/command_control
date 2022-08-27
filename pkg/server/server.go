@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gliderlabs/ssh"
+	gossh "golang.org/x/crypto/ssh"
 )
 
 type CommandClient struct {
@@ -33,6 +34,7 @@ type CommandServer struct {
 	CurrentClient *CommandClient
 	Update        chan bool
 	sshServer     *ssh.Server
+	AllowedKeys   []gossh.PublicKey
 }
 
 func (cs *CommandServer) connectionHandler(ctx ssh.Context, conn net.Conn) net.Conn {
@@ -92,6 +94,20 @@ func (cs *CommandServer) Start() error {
 	cs.Update = make(chan bool, 200)
 	cs.sshServer = &ssh.Server{Addr: ":2222", Handler: cs.handler}
 	if err := cs.sshServer.SetOption(ssh.WrapConn(cs.connectionHandler)); err != nil {
+		return err
+	}
+
+	publicKeyOption := ssh.PublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
+		for _, checkKey := range cs.AllowedKeys {
+			if ssh.KeysEqual(checkKey, key) {
+				return true
+			}
+		}
+
+		return false
+	})
+
+	if err := cs.sshServer.SetOption(publicKeyOption); err != nil {
 		return err
 	}
 

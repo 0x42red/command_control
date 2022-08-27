@@ -1,12 +1,15 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"time"
 
 	"github.com/0x42red/command_control/pkg/server"
 	"github.com/0x42red/command_control/pkg/ui"
 	"github.com/jroimartin/gocui"
+
+	gossh "golang.org/x/crypto/ssh"
 )
 
 func main() {
@@ -28,7 +31,21 @@ func main() {
 		}
 	}(g)
 
-	commandServer := &server.CommandServer{}
+	keyBytes, err := ioutil.ReadFile("./keys/public/id_rsa.pub")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	publicKey, _, _, _, err := gossh.ParseAuthorizedKey(keyBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	commandServer := &server.CommandServer{
+		AllowedKeys: []gossh.PublicKey{
+			publicKey,
+		},
+	}
 	go commandServer.Start()
 
 	err = ui.SetKeyBinding(g, commandServer)
