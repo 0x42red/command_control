@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	var g, err = gocui.NewGui(gocui.OutputNormal)
+	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		log.Panicln(err)
 	}

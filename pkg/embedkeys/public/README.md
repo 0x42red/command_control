@@ -1,1 +1,1 @@
-Place ssh public *.pub keys here
+Place ssh public *.pub keys here or just run `go generate ./...`

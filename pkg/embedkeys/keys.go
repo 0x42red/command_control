@@ -1,5 +1,7 @@
 package embedkeys
 
+//go:generate go run genkeys.go
+
 import (
 	"embed"
 
@@ -7,14 +9,14 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-//go:embed public/id_rsa.pub
+//go:embed public/gen.pub
 var publicKeyFile embed.FS
 
-//go:embed private/id_rsa.key
+//go:embed private/gen.key
 var privateKeyFile embed.FS
 
 func GetPublicKey() (gossh.PublicKey, error) {
-	keyBytes, err := publicKeyFile.ReadFile("public/id_rsa.pub")
+	keyBytes, err := publicKeyFile.ReadFile("public/gen.pub")
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +30,7 @@ func GetPublicKey() (gossh.PublicKey, error) {
 }
 
 func GetPrivateKey() (gossh.Signer, error) {
-	keyBytes, err := privateKeyFile.ReadFile("private/id_rsa.key")
+	keyBytes, err := privateKeyFile.ReadFile("private/gen.key")
 	if err != nil {
 		return nil, err
 	}

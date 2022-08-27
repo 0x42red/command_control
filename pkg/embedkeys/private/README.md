@@ -1,1 +1,1 @@
-Place ssh private *.key keys here
+Place ssh private *.key keys here or just run `go generate ./...`
