@@ -36,10 +36,19 @@ func UpdateCommandServerGUI(g *gocui.Gui, cs *server.CommandServer) {
 				v.Clear()
 				v.SetCursor(0, 0)
 				for _, client := range cs.Clients {
-					if client == cs.CurrentClient {
-						fmt.Fprintln(v, "\033[32m>> ", client.RemoteAddr, "\033[0m")
-					} else {
-						fmt.Fprintln(v, client.RemoteAddr)
+					select {
+					case <-client.Context.Done():
+						if client == cs.CurrentClient {
+							fmt.Fprintln(v, "\033[31m>> ", client.RemoteAddr, "\033[0m")
+						} else {
+							fmt.Fprintln(v, "\033[31m", client.RemoteAddr, "\033[0m")
+						}
+					default:
+						if client == cs.CurrentClient {
+							fmt.Fprintln(v, "\033[32m>> ", client.RemoteAddr, "\033[0m")
+						} else {
+							fmt.Fprintln(v, client.RemoteAddr)
+						}
 					}
 				}
 				return nil

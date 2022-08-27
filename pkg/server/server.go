@@ -12,6 +12,7 @@ type CommandClient struct {
 	RemoteAddr net.Addr
 	buffer     []string
 	commands   []string
+	Context    ssh.Context
 }
 
 func (c *CommandClient) GetBuffer() []string {
@@ -37,6 +38,7 @@ type CommandServer struct {
 func (cs *CommandServer) connectionHandler(ctx ssh.Context, conn net.Conn) net.Conn {
 	client := &CommandClient{
 		RemoteAddr: conn.RemoteAddr(),
+		Context:    ctx,
 	}
 	client.buffer = []string{
 		"\033[33m",
@@ -64,6 +66,7 @@ func (cs *CommandServer) handler(s ssh.Session) {
 			activeClient = client
 		}
 	}
+
 	if strings.TrimSpace(s.RawCommand()) == "POLL" {
 		if len(activeClient.commands) > 0 {
 			cmd := activeClient.commands[0]
