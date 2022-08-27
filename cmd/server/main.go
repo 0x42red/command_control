@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/0x42red/reverse_shell/pkg/server"
-	"github.com/0x42red/reverse_shell/pkg/ui"
+	"github.com/0x42red/command_control/pkg/server"
+	"github.com/0x42red/command_control/pkg/ui"
 	"github.com/jroimartin/gocui"
 )
 

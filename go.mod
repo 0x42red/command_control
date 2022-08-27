@@ -1,4 +1,4 @@
-module github.com/0x42red/reverse_shell
+module github.com/0x42red/command_control
 
 go 1.17
 
