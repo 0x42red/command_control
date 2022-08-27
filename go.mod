@@ -8,6 +8,7 @@ require (
 	github.com/melbahja/goph v1.3.0
 	github.com/pkg/sftp v1.13.4
 	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
 
 require (

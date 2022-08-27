@@ -1,3 +1,4 @@
 .DS_Store
-pkg/embedkeys/private/*.key
-pkg/embedkeys/public/*.pub
+pkg/embeddata/private/*.key
+pkg/embeddata/public/*.pub
+pkg/embeddata/config/config.yaml
