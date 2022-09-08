@@ -2,13 +2,13 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"time"
 
@@ -86,7 +86,7 @@ func main() {
 		ssh.PublicKeys(signer),
 	}
 
-	fmt.Println(auth[0])
+	fmt.Println(signer.PublicKey())
 
 	currentUser, err := user.Current()
 	if err != nil {
@@ -107,13 +107,15 @@ func main() {
 	defer client.Close()
 
 	handleConnection(client)
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
 }
 
 func handleConnection(client *goph.Client) {
 
 	fmt.Printf("Connected to %s:%d\n", client.Config.Addr, client.Config.Port)
-
-	scanner := bufio.NewScanner(os.Stdin)
 
 	ticker := time.NewTicker(1000 * time.Millisecond)
 	done := make(chan bool)
@@ -157,38 +159,4 @@ func handleConnection(client *goph.Client) {
 			}
 		}
 	}()
-
-	fmt.Print("> ")
-
-	var (
-		out   []byte
-		cmd   string
-		parts []string
-	)
-
-	for scanner.Scan() {
-		cmd = scanner.Text()
-		parts = strings.Split(cmd, " ")
-
-		if len(parts) < 1 {
-			continue
-		}
-
-		switch parts[0] {
-
-		case "exit":
-			return
-
-		default:
-
-			command, err := client.Command(parts[0], parts[1:]...)
-			if err != nil {
-				panic(err)
-			}
-			out, err = command.CombinedOutput()
-			fmt.Println(string(out), err)
-		}
-
-		fmt.Print("> ")
-	}
 }

@@ -25,6 +25,11 @@ func UpdateCommandServerGUI(g *gocui.Gui, cs *server.CommandServer) {
 					fmt.Fprintln(v, line)
 				}
 
+				if !v.Autoscroll {
+					ox, oy := v.Origin()
+					v.SetOrigin(ox, oy+cs.CurrentClient.CursorY)
+				}
+
 				return nil
 			})
 
@@ -51,6 +56,22 @@ func UpdateCommandServerGUI(g *gocui.Gui, cs *server.CommandServer) {
 						}
 					}
 				}
+
+				// Great area to debug things with
+				// console, _ := g.View("console")
+				// _, oy := console.Origin()
+				// _, y := console.Size()
+				// fmt.Fprintln(v, "ViewBufferLines:", len(console.ViewBufferLines()))
+				// fmt.Fprintln(v, "Bufferlines:", len(console.BufferLines()))
+				// fmt.Fprintln(v, "oy+cursorY:", oy+cs.CurrentClient.CursorY)
+				// fmt.Fprintln(v, "console size:", fmt.Sprint(console.Size()))
+				// fmt.Fprintln(v, "console origin X, Y:", fmt.Sprint(console.Origin()))
+				// fmt.Fprintln(v, "UserCursorPosition:", cs.CurrentClient.CursorY)
+				// fmt.Fprintln(v, "UserCursorScrolling:", cs.CurrentClient.Scrolling)
+				// fmt.Fprintln(v, "Logic:", fmt.Sprint(oy+cs.CurrentClient.CursorY > len(console.ViewBufferLines())-y-1))
+				// fmt.Fprintln(v, "Autoscrolling:", console.Autoscroll)
+				// fmt.Fprintln(v, "Break Down:", fmt.Sprint(len(console.ViewBufferLines())-y-1))
+				// fmt.Fprintln(v, "Simple:", oy+cs.CurrentClient.CursorY)
 				return nil
 			})
 		default:
@@ -140,6 +161,13 @@ func SetKeyBinding(g *gocui.Gui, commandServer *server.CommandServer) error {
 		return err
 	}
 
+	if err := g.SetKeybinding("", gocui.KeyCtrlI, gocui.ModNone, scrollCommand(commandServer, true)); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", gocui.KeyCtrlK, gocui.ModNone, scrollCommand(commandServer, false)); err != nil {
+		return err
+	}
+
 	if err := g.SetKeybinding("", gocui.KeyArrowDown, gocui.ModNone, changeClientCommand(commandServer, false)); err != nil {
 		return err
 	}
@@ -167,6 +195,46 @@ func enterCommand(cs *server.CommandServer) func(*gocui.Gui, *gocui.View) error 
 		}
 		v.Clear()
 		v.SetCursor(0, 0)
+		return nil
+	}
+}
+
+func scrollCommand(cs *server.CommandServer, up bool) func(*gocui.Gui, *gocui.View) error {
+	return func(g *gocui.Gui, v *gocui.View) error {
+		if cs.CurrentClient == nil {
+			return nil
+		}
+
+		console, _ := g.View("console")
+		_, y := console.Size()
+		_, oy := console.Origin()
+		if len(console.ViewBufferLines()) < y || (!cs.CurrentClient.Scrolling && !up) {
+			return nil
+		}
+
+		if cs.CurrentClient.Scrolling && oy > len(console.ViewBufferLines())-y-1 {
+			console.Autoscroll = true
+			cs.CurrentClient.Scrolling = false
+
+			return nil
+		}
+
+		if !cs.CurrentClient.Scrolling {
+			cs.CurrentClient.CursorY = len(console.ViewBufferLines()) - y
+		}
+
+		dy := 1
+		if up {
+			dy = -1
+		}
+
+		console.Autoscroll = false
+		cs.CurrentClient.Scrolling = true
+		cs.CurrentClient.CursorY += dy
+		if cs.CurrentClient.CursorY < 0 {
+			cs.CurrentClient.CursorY = 0
+		}
+		cs.Update <- true
 		return nil
 	}
 }

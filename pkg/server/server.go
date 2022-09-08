@@ -14,9 +14,17 @@ type CommandClient struct {
 	buffer     []string
 	commands   []string
 	Context    ssh.Context
+	CursorX    int
+	CursorY    int
+	Scrolling  bool
 }
 
 func (c *CommandClient) GetBuffer() []string {
+	return c.buffer
+}
+
+func (c *CommandClient) AddBuffer(lines ...string) []string {
+	c.buffer = append(c.buffer, lines...)
 	return c.buffer
 }
 
